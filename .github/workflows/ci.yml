@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: install
+        run: |
+          pip install --upgrade pip
+          pip install .
+          pip install mypy ruff pytest
+
+      - name: ruff
+        run: ruff check devpulse main.py tests
+
+      - name: mypy
+        run: mypy main.py devpulse
+
+      - name: pytest
+        run: pytest -q
+
+      - name: smoke
+        run: devpulse --help
